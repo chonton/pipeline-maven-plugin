@@ -16,7 +16,7 @@ public class Pipeline {
   private final List<StepProcess> stepProcesses;
 
   Pipeline(RunPipeline runPipeline) throws MojoExecutionException, IOException {
-    Path workDir = setWorkingDir(runPipeline.buildDir, runPipeline.dir);
+    Path workDir = setWorkingDir(runPipeline.baseDir, runPipeline.dir);
     stepProcesses = createStepProcesses(workDir, runPipeline.steps);
     deadline = parseWait(runPipeline.wait.trim()).toMillis() + System.currentTimeMillis();
 
@@ -52,12 +52,13 @@ public class Pipeline {
     return buildPath;
   }
 
-  private static List<StepProcess> createStepProcesses(Path workDir, Step[] steps)
+  private static List<StepProcess> createStepProcesses(Path workDir, List<Step> steps)
       throws IOException, MojoExecutionException {
-    if (steps.length == 0) {
+    if (steps.isEmpty()) {
       throw new MojoExecutionException("steps must be specified");
     }
-    List<StepProcess> stepProcesses = new ArrayList<>(steps.length);
+
+    List<StepProcess> stepProcesses = new ArrayList<>(steps.size());
     for (Step step : steps) {
       stepProcesses.add(new StepProcess(workDir, step));
     }
@@ -65,11 +66,11 @@ public class Pipeline {
   }
 
   private void plumbStdIn(String stdIn) throws MojoExecutionException {
-    stepProcesses.getFirst().plumbStdIn(stdIn);
+    stepProcesses.get(0).plumbStdIn(stdIn);
   }
 
   private void plumbStdOut(String stdOut) throws IOException {
-    stepProcesses.getLast().plumbStdOut(stdOut);
+    stepProcesses.get(stepProcesses.size() - 1).plumbStdOut(stdOut);
   }
 
   private void plumbStdErrs() throws IOException {
@@ -80,10 +81,8 @@ public class Pipeline {
   }
 
   private List<Process> startProcesses() throws IOException {
-    List<ProcessBuilder> processes = new ArrayList<>();
-    for (StepProcess stepProcess : stepProcesses) {
-      processes.add(stepProcess.processBuilder);
-    }
+    List<ProcessBuilder> processes =
+        stepProcesses.stream().map(StepProcess::getProcessBuilder).toList();
     return ProcessBuilder.startPipeline(processes);
   }
 
@@ -98,23 +97,19 @@ public class Pipeline {
   }
 
   private void setProcesses(Iterator<Process> processes) {
-    for (StepProcess stepProcess : stepProcesses) {
-      stepProcess.setProcess(processes.next());
-    }
+    stepProcesses.forEach(stepProcess -> stepProcess.setProcess(processes.next()));
   }
 
   private void pumpStdErrs(Consumer<String> consumer) {
-    for (StepProcess stepProcess : stepProcesses) {
-      stepProcess.pumpStdErr(consumer);
-    }
+    stepProcesses.forEach(stepProcess -> stepProcess.pumpStdErr(consumer));
   }
 
   private void closeStdIn() throws IOException {
-    stepProcesses.getFirst().closeStdIn();
+    stepProcesses.get(0).closeStdIn();
   }
 
   private void pumpStdOut(Consumer<String> consumer) {
-    stepProcesses.getLast().pumpStdOut(consumer);
+    stepProcesses.get(stepProcesses.size() - 1).pumpStdOut(consumer);
   }
 
   private void waitForProcesses() throws MojoExecutionException {

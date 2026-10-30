@@ -1,6 +1,7 @@
 package org.honton.chas.compose.maven.plugin;
 
 import java.io.File;
+import java.util.List;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -16,7 +17,7 @@ public class RunPipeline extends AbstractMojo {
 
   /** Pipeline steps */
   @Parameter(required = true)
-  Step[] steps;
+  List<Step> steps;
 
   /** Working directory of pipeline */
   @Parameter String dir;
@@ -34,8 +35,8 @@ public class RunPipeline extends AbstractMojo {
   @Parameter(defaultValue = "5m")
   String wait;
 
-  @Parameter(defaultValue = "${project.build.directory}", readonly = true)
-  File buildDir;
+  @Parameter(defaultValue = "${project.basedir}", readonly = true)
+  File baseDir;
 
   public final void execute() throws MojoFailureException, MojoExecutionException {
     if (skip) {

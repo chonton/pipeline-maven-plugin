@@ -6,13 +6,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.maven.plugin.MojoExecutionException;
 
 class StepProcess {
-  final ProcessBuilder processBuilder;
+  @Getter private final ProcessBuilder processBuilder;
   private final List<Integer> successCodes;
   private final Path dir;
   private final Step step;
@@ -25,17 +27,6 @@ class StepProcess {
     this.step = step;
     processBuilder = createProcessBuilder(step);
     name = getName(step);
-  }
-
-  private static String getName(Step step) {
-    String name = step.getName();
-    if (name != null) {
-      name = name.trim();
-      if (!name.isEmpty()) {
-        return name;
-      }
-    }
-    return step.getCmd().trim();
   }
 
   private static Path setWorkingDir(Path buildPath, String dir) throws IOException {
@@ -58,19 +49,42 @@ class StepProcess {
     return codes;
   }
 
-  private ProcessBuilder createProcessBuilder(Step step) throws MojoExecutionException {
-    String cmd = step.getCmd();
-    if (cmd == null || cmd.isEmpty()) {
-      throw new MojoExecutionException("cmd is required");
+  private static String trimCmd(String cmd) throws MojoExecutionException {
+    if (cmd != null) {
+      cmd = cmd.trim();
+      if (!cmd.isEmpty()) {
+        return cmd;
+      }
     }
+    throw new MojoExecutionException("cmd is required");
+  }
+
+  private ProcessBuilder createProcessBuilder(Step step) throws MojoExecutionException {
     List<String> command = new ArrayList<>();
-    command.add(cmd);
-    command.addAll(step.getArgs());
+    command.add(trimCmd(step.getCmd()));
+    List<String> args = step.getArgs();
+    if (args != null) {
+      command.addAll(args);
+    }
 
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.directory(dir.toFile());
-    builder.environment().putAll(step.getEnv());
+    Map<String, String> env = step.getEnv();
+    if (env != null) {
+      builder.environment().putAll(env);
+    }
     return builder;
+  }
+
+  private String getName(Step step) {
+    String putative = step.getName();
+    if (putative != null) {
+      putative = putative.trim();
+      if (!putative.isEmpty()) {
+        return putative;
+      }
+    }
+    return processBuilder.command().get(0);
   }
 
   void plumbStdIn(String stdIn) throws MojoExecutionException {

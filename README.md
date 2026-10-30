@@ -15,14 +15,14 @@ Plugin reports are available at [plugin info](https://chonton.github.io/pipeline
 
 ## Run Configuration
 
-| Parameter | Default                    | Property      | Description                                                           |
-|----------:|:---------------------------|:--------------|:----------------------------------------------------------------------|
-|       dir | ${project.build.directory} |               | Working directory of pipeline, relative to ${project.build.directory} |
-|      skip | false                      | pipeline.skip | Skip execution                                                        |
-|     stdIn | /dev/null                  |               | Existing input file for first step                                    |
-|    stdOut | maven logger               |               | Output file for last step                                             |
-|     steps |                            |               | Non-empty list of Step                                                |
-|      wait | 5m                         | pipeline.wait | Duration* to wait for completion of pipeline                          |
+| Parameter | Default            | Property      | Description                                                   |
+|----------:|:-------------------|:--------------|:--------------------------------------------------------------|
+|       dir | ${project.baseDir} |               | Working directory of pipeline, relative to ${project.basedir} |
+|      skip | false              | pipeline.skip | Skip execution                                                |
+|     stdIn | /dev/null          |               | Existing input file for first step                            |
+|    stdOut | maven logger       |               | Output file for last step                                     |
+|     steps |                    |               | Non-empty list of Step                                        |
+|      wait | 5m                 | pipeline.wait | Duration* to wait for completion of pipeline                  |
 
 * Duration is positive integer followed by unit indicator. Unit can be 'h' (hours), 'm' (minutes), or  's' (seconds).
 
@@ -82,7 +82,7 @@ matches one of the step success codes.
                 <cmd>jq</cmd>
                 <args>
                   <arg>map({ (.projectName): .vulnerabilities | map(select( .socialTrendAlert )) | map({(.id):
-                    {severity,exploit,socialTrendAlert} }) | add }) | add | del(.. | nulls)' | stderr
+                    {severity,exploit,socialTrendAlert} }) | add }) | add | del(.. | nulls) | stderr
                   </arg>
                 </args>
                 <success>0</success>
