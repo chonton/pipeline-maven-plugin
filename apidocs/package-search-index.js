@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.honton.chas.pipeline_maven_plugin"},{"l":"org.honton.chas.pipeline.maven.plugin"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.honton.chas.pipeline.maven.plugin"}];updateSearchResults();
