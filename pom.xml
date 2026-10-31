@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.honton.chas</groupId>
@@ -8,7 +10,9 @@
   <packaging>maven-plugin</packaging>
 
   <name>Pipeline Maven Plugin</name>
-  <description>Use Pipeline to run multiple process stages. Output of each stage is piped to the input of the next stage</description>
+  <description>Use Pipeline to run multiple process stages. Output of each stage is piped to the
+    input of the next stage
+  </description>
 
   <url>https://github.com/chonton/${project.artifactId}</url>
   <inceptionYear>2026</inceptionYear>
@@ -107,7 +111,6 @@
       <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
-
 
   </dependencies>
 
@@ -254,8 +257,9 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex><![CDATA[(org\.honton\.chas\.podman\.maven\.plugin\.config\.)?(\p{L}+)Config]]></findRegex>
-              <replaceValue><![CDATA[<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/$2Config.html">$2Config</a>]]></replaceValue>
+              <findRegex><![CDATA[org\.honton\.chas\.pipeline\.maven\.plugin\.Step]]></findRegex>
+              <replaceValue>
+                <![CDATA[<a href="./apidocs/org/honton/chas/pipeline/maven/plugin/Step.html">Step</a>]]></replaceValue>
             </configuration>
           </execution>
           <execution>
@@ -395,6 +399,25 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-maven-plugin</artifactId>
+        <version>1.18.20.0</version>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>delombok</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>src/main/java</sourceDirectory>
+              <outputDirectory>${project.build.directory}/delombok</outputDirectory>
+              <addOutputDirectory>false</addOutputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
@@ -412,6 +435,9 @@
             </reports>
           </reportSet>
         </reportSets>
+        <configuration>
+          <sourcepath>${project.build.directory}/delombok</sourcepath>
+        </configuration>
       </plugin>
 
       <plugin>

@@ -2,10 +2,12 @@ package org.honton.chas.pipeline.maven.plugin;
 
 import java.util.List;
 import java.util.Map;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /** Single step in pipeline */
-@Data
+@Getter
+@Setter
 public class Step {
   /** Name of step. Defaults to cmd value. */
   private String name;
