@@ -32,4 +32,10 @@ public class Step {
    * the success codes. Empty success is equivalent to all exit codes are successful
    */
   private String success;
+
+  /** Level to log exit code. One of ERROR, WARN, INFO, DEBUG, NONE; defaults to NONE */
+  private String logLevel;
+
+  /** Action to take on mismatch. One of CONTINUE, EXIT; defaults to CONTINUE */
+  private String misMatch;
 }

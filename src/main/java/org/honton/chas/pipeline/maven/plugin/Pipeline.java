@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import org.apache.maven.plugin.MojoExecutionException;
 
 public class Pipeline {
@@ -86,36 +86,36 @@ public class Pipeline {
     return ProcessBuilder.startPipeline(processes);
   }
 
-  void run(Consumer<String> consumer) throws MojoExecutionException, IOException {
+  void run(BiConsumer<LogLevel, String> logger) throws MojoExecutionException, IOException {
     List<Process> processes = startProcesses();
     setProcesses(processes.iterator());
 
-    pumpStdErrs(consumer);
-    pumpStdOut(consumer);
+    pumpStdErrs(logger);
+    pumpStdOut(logger);
     closeStdIn();
-    waitForProcesses();
+    waitForProcesses(logger);
   }
 
   private void setProcesses(Iterator<Process> processes) {
     stepProcesses.forEach(stepProcess -> stepProcess.setProcess(processes.next()));
   }
 
-  private void pumpStdErrs(Consumer<String> consumer) {
-    stepProcesses.forEach(stepProcess -> stepProcess.pumpStdErr(consumer));
+  private void pumpStdErrs(BiConsumer<LogLevel, String> logger) {
+    stepProcesses.forEach(stepProcess -> stepProcess.pumpStdErr(logger));
   }
 
   private void closeStdIn() throws IOException {
     stepProcesses.get(0).closeStdIn();
   }
 
-  private void pumpStdOut(Consumer<String> consumer) {
-    stepProcesses.get(stepProcesses.size() - 1).pumpStdOut(consumer);
+  private void pumpStdOut(BiConsumer<LogLevel, String> logger) {
+    stepProcesses.get(stepProcesses.size() - 1).pumpStdOut(logger);
   }
 
-  private void waitForProcesses() throws MojoExecutionException {
+  private void waitForProcesses(BiConsumer<LogLevel, String> logger) throws MojoExecutionException {
     for (StepProcess stepProcess : stepProcesses) {
       try {
-        stepProcess.waitForProcess(deadline);
+        stepProcess.waitForProcess(deadline, logger);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         throw new MojoExecutionException(e);

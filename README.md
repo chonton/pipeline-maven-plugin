@@ -37,6 +37,8 @@ Plugin reports are available at [plugin info](https://chonton.github.io/pipeline
 |       dir | optional String    | working directory of step, relative to pipeline working directory; defaults to pipeline working directory |
 |    stdErr | optional String    | file to receive error output; defaults to maven logger                                                    |
 |   success | optional String    | Comma separated list of positive integers; defaults to all exit codes sucessful                           |
+|  logLevel | optional String    | Level to log exit code; one of ERROR, WARN, INFO, DEBUG, NONE; defaults to NONE                           |
+|  misMatch | optional String    | Action to take on mismatch; one of CONTINUE, EXIT; defaults to CONTINUE                                   |
 
 Successful run of pipeline occurs if wait duration is not exceeded and for each step, the exit code of the command
 matches one of the step success codes.
@@ -53,7 +55,7 @@ matches one of the step success codes.
       <plugin>
         <groupId>org.honton.chas</groupId>
         <artifactId>pipeline-maven-plugin</artifactId>
-        <version>0.0.1</version>
+        <version>1.0.0</version>
       </plugin>
     </plugins>
   </pluginManagement>
@@ -77,6 +79,7 @@ matches one of the step success codes.
                   <arg>--severity-threshold=high</arg>
                   <arg>--json</arg>
                 </args>
+                <logLevel>INFO</logLevel>
               </step>
               <step>
                 <cmd>jq</cmd>
@@ -86,6 +89,8 @@ matches one of the step success codes.
                   </arg>
                 </args>
                 <success>0</success>
+                <logLevel>INFO</logLevel>
+                <misMatch>EXIT</misMatch>
               </step>
               <step>
                 <cmd>jq</cmd>
@@ -95,6 +100,7 @@ matches one of the step success codes.
                   <arg>length==0</arg>
                 </args>
                 <success>0</success>
+                <misMatch>EXIT</misMatch>
               </step>
             </steps>
             <wait>5m</wait>

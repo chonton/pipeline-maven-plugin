@@ -3,17 +3,17 @@ package org.honton.chas.pipeline.maven.plugin;
 import java.io.BufferedReader;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 class Pump {
   private final BufferedReader bufferedReader;
   private final String name;
-  private final Consumer<String> consumer;
+  private final BiConsumer<LogLevel, String> logger;
 
-  Pump(BufferedReader bufferedReader, String name, Consumer<String> consumer) {
+  Pump(BufferedReader bufferedReader, String name, BiConsumer<LogLevel, String> logger) {
     this.bufferedReader = bufferedReader;
     this.name = name;
-    this.consumer = consumer;
+    this.logger = logger;
     ForkJoinPool.commonPool().execute(this::startPumpThread);
   }
 
@@ -25,7 +25,7 @@ class Pump {
           return;
         }
         if (!line.isEmpty()) {
-          consumer.accept(name + ' ' + line);
+          logger.accept(LogLevel.INFO, name + ' ' + line);
         }
       }
     } catch (Exception e) {

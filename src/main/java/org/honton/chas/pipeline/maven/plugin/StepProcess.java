@@ -8,14 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.maven.plugin.MojoExecutionException;
 
 class StepProcess {
+
   @Getter private final ProcessBuilder processBuilder;
   private final List<Integer> successCodes;
+  private final LogLevel logLevel;
+  private final MisMatch misMatch;
+
   private final Path dir;
   private final Step step;
   private final String name;
@@ -23,10 +28,29 @@ class StepProcess {
 
   StepProcess(Path workDir, Step step) throws IOException, MojoExecutionException {
     successCodes = parseSuccessCodes(step.getSuccess());
+    this.logLevel = parseEnum(step.getLogLevel(), LogLevel::values, LogLevel.NONE);
+    this.misMatch = parseEnum(step.getMisMatch(), MisMatch::values, MisMatch.CONTINUE);
+
     dir = setWorkingDir(workDir, step.getDir());
     this.step = step;
     processBuilder = createProcessBuilder(step);
     name = getName(step);
+  }
+
+  private static <T extends Enum<T>> T parseEnum(
+      String givenValue, Supplier<T[]> values, T defaultValue) throws MojoExecutionException {
+    if (givenValue != null) {
+      String match = givenValue.trim();
+      if (!match.isEmpty()) {
+        for (T enumValue : values.get()) {
+          if (enumValue.name().equalsIgnoreCase(match)) {
+            return enumValue;
+          }
+        }
+        throw new MojoExecutionException("Invalid value " + givenValue);
+      }
+    }
+    return defaultValue;
   }
 
   private static Path setWorkingDir(Path buildPath, String dir) throws IOException {
@@ -123,26 +147,26 @@ class StepProcess {
     }
   }
 
-  void pumpStdErr(Consumer<String> consumer) {
-    new Pump(process.errorReader(), name, consumer);
+  void pumpStdErr(BiConsumer<LogLevel, String> logger) {
+    new Pump(process.errorReader(), name, logger);
   }
 
-  public void pumpStdOut(Consumer<String> consumer) {
-    new Pump(process.inputReader(), name, consumer);
+  public void pumpStdOut(BiConsumer<LogLevel, String> logger) {
+    new Pump(process.inputReader(), name, logger);
   }
 
-  public void waitForProcess(long deadline) throws MojoExecutionException, InterruptedException {
+  public void waitForProcess(long deadline, BiConsumer<LogLevel, String> logger)
+      throws MojoExecutionException, InterruptedException {
     long waitTime = deadline - System.currentTimeMillis();
     if (waitTime < 0 || !process.waitFor(waitTime, TimeUnit.MILLISECONDS)) {
       throw new MojoExecutionException("Pipeline step " + name + " exceeded wait time");
     }
-    if (successCodes.isEmpty()) {
-      return;
-    }
+
     int exitCode = process.exitValue();
-    if (successCodes.contains(exitCode)) {
-      return;
+    logger.accept(logLevel, name + " exited with code " + exitCode);
+
+    if (misMatch == MisMatch.EXIT && !successCodes.isEmpty() && !successCodes.contains(exitCode)) {
+      throw new MojoExecutionException(name + ' ' + exitCode + " does not match success codes");
     }
-    throw new MojoExecutionException("Pipeline step " + name + " exited with code " + exitCode);
   }
 }
