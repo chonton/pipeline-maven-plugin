@@ -19,7 +19,7 @@ class StepProcess {
   @Getter private final ProcessBuilder processBuilder;
   private final List<Integer> successCodes;
   private final LogLevel logLevel;
-  private final MisMatch misMatch;
+  private final EndAction endAction;
 
   private final Path dir;
   private final Step step;
@@ -28,8 +28,8 @@ class StepProcess {
 
   StepProcess(Path workDir, Step step) throws IOException, MojoExecutionException {
     successCodes = parseSuccessCodes(step.getSuccess());
-    this.logLevel = parseEnum(step.getLogLevel(), LogLevel::values, LogLevel.NONE);
-    this.misMatch = parseEnum(step.getMisMatch(), MisMatch::values, MisMatch.CONTINUE);
+    this.logLevel = parseEnum(step.getLogLevel(), LogLevel::values, LogLevel.INFO);
+    this.endAction = parseEnum(step.getEndAction(), EndAction::values, EndAction.LOG_MISMATCH);
 
     dir = setWorkingDir(workDir, step.getDir());
     this.step = step;
@@ -163,10 +163,25 @@ class StepProcess {
     }
 
     int exitCode = process.exitValue();
-    logger.accept(logLevel, name + " exited with code " + exitCode);
-
-    if (misMatch == MisMatch.EXIT && !successCodes.isEmpty() && !successCodes.contains(exitCode)) {
-      throw new MojoExecutionException(name + ' ' + exitCode + " does not match success codes");
+    boolean misMatch = !successCodes.isEmpty() && !successCodes.contains(exitCode);
+    switch (endAction) {
+      case EXIT_MISMATCH:
+        {
+          if (misMatch) {
+            throw new MojoExecutionException(
+                name + ' ' + exitCode + " does not match success codes");
+          }
+          break;
+        }
+      case LOG_ALWAYS:
+        {
+          logger.accept(logLevel, name + " exited with code " + exitCode);
+          break;
+        }
+      default:
+        if (misMatch) {
+          logger.accept(logLevel, name + ' ' + exitCode + " does not match success codes");
+        }
     }
   }
 }

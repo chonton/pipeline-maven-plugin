@@ -24,24 +24,26 @@ Plugin reports are available at [plugin info](https://chonton.github.io/pipeline
 |     steps |                    |               | Non-empty list of Step                                        |
 |      wait | 5m                 | pipeline.wait | Duration* to wait for completion of pipeline                  |
 
-* Duration is positive integer followed by unit indicator. Unit can be 'h' (hours), 'm' (minutes), or  's' (seconds).
+* Duration is positive integer suffixed with single character unit. Unit can be 'h' (hours), 'm' (minutes), or  's'
+  (seconds).
 
 ## Step Attributes
 
-| Parameter | Type               | Description                                                                                               |
-|----------:|:-------------------|:----------------------------------------------------------------------------------------------------------|
-|      name | optional String    | name of step; defaults to cmd                                                                             |
-|       cmd | required String    | program to run                                                                                            |
-|      args | List<String>       | list of program arguments                                                                                 |
-|       env | Map<String,String> | environment variables for program                                                                         |
-|       dir | optional String    | working directory of step, relative to pipeline working directory; defaults to pipeline working directory |
-|    stdErr | optional String    | file to receive error output; defaults to maven logger                                                    |
-|   success | optional String    | Comma separated list of positive integers; defaults to all exit codes sucessful                           |
-|  logLevel | optional String    | Level to log exit code; one of ERROR, WARN, INFO, DEBUG, NONE; defaults to NONE                           |
-|  misMatch | optional String    | Action to take on mismatch; one of CONTINUE, EXIT; defaults to CONTINUE                                   |
+| Parameter | Type               | Description                                                                                                    |
+|----------:|:-------------------|:---------------------------------------------------------------------------------------------------------------|
+|      name | optional String    | name of step; defaults to cmd                                                                                  |
+|       cmd | required String    | program to run                                                                                                 |
+|      args | List<String>       | list of program arguments                                                                                      |
+|       env | Map<String,String> | environment variables for program                                                                              |
+|       dir | optional String    | working directory of step, relative to pipeline working directory; defaults to pipeline working directory      |
+|    stdErr | optional String    | file to receive error output; defaults to maven logger                                                         |
+|   success | optional String    | Comma separated list of positive integers; defaults to all exit codes sucessful                                |
+| endAction | optional String    | Action to take on command completion. One of LOG_MISMATCH, LOG_ALWAYS, EXIT_MISMATCH; defaults to LOG_MISMATCH |
+|  logLevel | optional String    | Level to log exit code; one of ERROR, WARN, INFO, DEBUG; defaults to INFO                                      |
 
-Successful run of pipeline occurs if wait duration is not exceeded and for each step, the exit code of the command
-matches one of the step success codes.
+Successful run of pipeline occurs if:
+- wait duration is not exceeded
+- for each step: endAction not equals EXIT_MISMATCH or exit code of the command matches success codes
 
 # Example
 
@@ -90,7 +92,7 @@ matches one of the step success codes.
                 </args>
                 <success>0</success>
                 <logLevel>INFO</logLevel>
-                <misMatch>EXIT</misMatch>
+                <endAction>EXIT_MISMATCH</endAction>
               </step>
               <step>
                 <cmd>jq</cmd>
@@ -100,7 +102,7 @@ matches one of the step success codes.
                   <arg>length==0</arg>
                 </args>
                 <success>0</success>
-                <misMatch>EXIT</misMatch>
+                <endAction>EXIT_MISMATCH</endAction>
               </step>
             </steps>
             <wait>5m</wait>

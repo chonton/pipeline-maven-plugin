@@ -33,9 +33,12 @@ public class Step {
    */
   private String success;
 
-  /** Level to log exit code. One of ERROR, WARN, INFO, DEBUG, NONE; defaults to NONE */
+  /** Level to log exit code. One of ERROR, WARN, INFO, DEBUG; defaults to INFO */
   private String logLevel;
 
-  /** Action to take on mismatch. One of CONTINUE, EXIT; defaults to CONTINUE */
-  private String misMatch;
+  /**
+   * Action to take on command completion. One of LOG_MISMATCH, LOG_ALWAYS, EXIT_MISMATCH; defaults
+   * to LOG_MISMATCH
+   */
+  private String endAction;
 }
