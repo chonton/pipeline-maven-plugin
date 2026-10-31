@@ -1,4 +1,4 @@
-package org.honton.chas.compose.maven.plugin;
+package org.honton.chas.pipeline.maven.plugin;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.honton.chas.compose.maven.plugin;
+package org.honton.chas.pipeline.maven.plugin;
 
 import java.util.List;
 import java.util.Map;
