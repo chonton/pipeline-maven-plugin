@@ -43,7 +43,8 @@ public class RunPipeline extends AbstractMojo {
       getLog().info("skipping pipeline");
     } else {
       try {
-        new Pipeline(this).run((LogLevel logLevel, String line) -> logLevel.log(getLog(), line));
+        new Pipeline(this)
+            .run((LogLevel logLevel, CharSequence line) -> logLevel.log(getLog(), line));
       } catch (RuntimeException | MojoExecutionException e) {
         throw e;
       } catch (Exception e) {

@@ -8,9 +8,9 @@ import java.util.function.BiConsumer;
 class Pump {
   private final BufferedReader bufferedReader;
   private final String name;
-  private final BiConsumer<LogLevel, String> logger;
+  private final BiConsumer<LogLevel, CharSequence> logger;
 
-  Pump(BufferedReader bufferedReader, String name, BiConsumer<LogLevel, String> logger) {
+  Pump(BufferedReader bufferedReader, String name, BiConsumer<LogLevel, CharSequence> logger) {
     this.bufferedReader = bufferedReader;
     this.name = name;
     this.logger = logger;

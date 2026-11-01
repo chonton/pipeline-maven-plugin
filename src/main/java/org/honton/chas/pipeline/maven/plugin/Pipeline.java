@@ -86,7 +86,7 @@ public class Pipeline {
     return ProcessBuilder.startPipeline(processes);
   }
 
-  void run(BiConsumer<LogLevel, String> logger) throws MojoExecutionException, IOException {
+  void run(BiConsumer<LogLevel, CharSequence> logger) throws MojoExecutionException, IOException {
     List<Process> processes = startProcesses();
     setProcesses(processes.iterator());
 
@@ -100,7 +100,7 @@ public class Pipeline {
     stepProcesses.forEach(stepProcess -> stepProcess.setProcess(processes.next()));
   }
 
-  private void pumpStdErrs(BiConsumer<LogLevel, String> logger) {
+  private void pumpStdErrs(BiConsumer<LogLevel, CharSequence> logger) {
     stepProcesses.forEach(stepProcess -> stepProcess.pumpStdErr(logger));
   }
 
@@ -108,11 +108,12 @@ public class Pipeline {
     stepProcesses.get(0).closeStdIn();
   }
 
-  private void pumpStdOut(BiConsumer<LogLevel, String> logger) {
+  private void pumpStdOut(BiConsumer<LogLevel, CharSequence> logger) {
     stepProcesses.get(stepProcesses.size() - 1).pumpStdOut(logger);
   }
 
-  private void waitForProcesses(BiConsumer<LogLevel, String> logger) throws MojoExecutionException {
+  private void waitForProcesses(BiConsumer<LogLevel, CharSequence> logger)
+      throws MojoExecutionException {
     for (StepProcess stepProcess : stepProcesses) {
       try {
         stepProcess.waitForProcess(deadline, logger);

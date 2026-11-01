@@ -5,25 +5,25 @@ import org.apache.maven.plugin.logging.Log;
 public enum LogLevel {
   ERROR {
     @Override
-    public void log(Log logger, String line) {
+    public void log(Log logger, CharSequence line) {
       logger.error(line);
     }
   },
   WARN {
     @Override
-    public void log(Log logger, String line) {
+    public void log(Log logger, CharSequence line) {
       logger.warn(line);
     }
   },
   INFO {
     @Override
-    public void log(Log logger, String line) {
+    public void log(Log logger, CharSequence line) {
       logger.info(line);
     }
   },
   DEBUG {
     @Override
-    public void log(Log logger, String line) {
+    public void log(Log logger, CharSequence line) {
       logger.debug(line);
     }
   };
@@ -34,5 +34,5 @@ public enum LogLevel {
    * @param logger The maven logger
    * @param line The line to log
    */
-  public abstract void log(Log logger, String line);
+  public abstract void log(Log logger, CharSequence line);
 }

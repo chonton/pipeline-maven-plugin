@@ -16,6 +16,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 class StepProcess {
 
+  private static final String DOES_NOT_MATCH_SUCCESS_CODES = " - does not match success codes";
+
   @Getter private final ProcessBuilder processBuilder;
   private final List<Integer> successCodes;
   private final LogLevel logLevel;
@@ -147,15 +149,15 @@ class StepProcess {
     }
   }
 
-  void pumpStdErr(BiConsumer<LogLevel, String> logger) {
+  void pumpStdErr(BiConsumer<LogLevel, CharSequence> logger) {
     new Pump(process.errorReader(), name, logger);
   }
 
-  public void pumpStdOut(BiConsumer<LogLevel, String> logger) {
+  public void pumpStdOut(BiConsumer<LogLevel, CharSequence> logger) {
     new Pump(process.inputReader(), name, logger);
   }
 
-  public void waitForProcess(long deadline, BiConsumer<LogLevel, String> logger)
+  public void waitForProcess(long deadline, BiConsumer<LogLevel, CharSequence> logger)
       throws MojoExecutionException, InterruptedException {
     long waitTime = deadline - System.currentTimeMillis();
     if (waitTime < 0 || !process.waitFor(waitTime, TimeUnit.MILLISECONDS)) {
@@ -169,19 +171,23 @@ class StepProcess {
         {
           if (misMatch) {
             throw new MojoExecutionException(
-                name + ' ' + exitCode + " does not match success codes");
+                exitCodeMessage(exitCode).append(DOES_NOT_MATCH_SUCCESS_CODES).toString());
           }
           break;
         }
       case LOG_ALWAYS:
         {
-          logger.accept(logLevel, name + " exited with code " + exitCode);
+          logger.accept(logLevel, exitCodeMessage(exitCode));
           break;
         }
       default:
         if (misMatch) {
-          logger.accept(logLevel, name + ' ' + exitCode + " does not match success codes");
+          logger.accept(logLevel, exitCodeMessage(exitCode).append(DOES_NOT_MATCH_SUCCESS_CODES));
         }
     }
+  }
+
+  private StringBuilder exitCodeMessage(int exitCode) {
+    return new StringBuilder("step: ").append(name).append(", exitCode: ").append(exitCode);
   }
 }
