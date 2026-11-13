@@ -6,7 +6,6 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import lombok.SneakyThrows;
@@ -35,10 +34,7 @@ class Pump {
 
   @SneakyThrows
   private static Writer createWriter(Path stdErrDup) {
-    return stdErrDup != null
-        ? Files.newBufferedWriter(
-            stdErrDup, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING)
-        : null;
+    return stdErrDup != null ? Files.newBufferedWriter(stdErrDup, StandardCharsets.UTF_8) : null;
   }
 
   private void startPumpThread() {
@@ -46,7 +42,9 @@ class Pump {
       for (; ; ) {
         String line = bufferedReader.readLine();
         if (line == null) {
-          writer.close();
+          if (writer != null) {
+            writer.close();
+          }
           return;
         }
         if (!line.isEmpty()) {
