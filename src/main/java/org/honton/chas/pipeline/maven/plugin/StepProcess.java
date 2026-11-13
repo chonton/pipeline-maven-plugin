@@ -20,17 +20,20 @@ class StepProcess {
 
   @Getter private final ProcessBuilder processBuilder;
   private final List<Integer> successCodes;
-  private final LogLevel logLevel;
+  private final LogLevel exitLevel;
   private final EndAction endAction;
 
+  private final LogLevel stdErrLevel;
   private final Path dir;
   private final Step step;
   private final String name;
+  Path outputPath;
   @Setter private Process process;
 
   StepProcess(Path workDir, Step step) throws IOException, MojoExecutionException {
     successCodes = parseSuccessCodes(step.getSuccess());
-    this.logLevel = parseEnum(step.getLogLevel(), LogLevel::values, LogLevel.INFO);
+    this.exitLevel = parseEnum(step.getExitLogLevel(), LogLevel::values, LogLevel.INFO);
+    this.stdErrLevel = parseEnum(step.getStdErrLevel(), LogLevel::values, null);
     this.endAction = parseEnum(step.getEndAction(), EndAction::values, EndAction.LOG_MISMATCH);
 
     dir = setWorkingDir(workDir, step.getDir());
@@ -134,9 +137,11 @@ class StepProcess {
   void plumbStdErr(boolean isTTY) throws IOException {
     String stdErr = step.getStdErr();
     if (stdErr != null && !stdErr.isEmpty()) {
-      Path outputPath = dir.resolve(stdErr);
+      outputPath = dir.resolve(stdErr);
       Files.createDirectories(outputPath.getParent());
-      processBuilder.redirectError(outputPath.toFile());
+      if (stdErrLevel == null) {
+        processBuilder.redirectError(outputPath.toFile());
+      }
     } else if (isTTY) {
       processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
     }
@@ -150,11 +155,11 @@ class StepProcess {
   }
 
   void pumpStdErr(BiConsumer<LogLevel, CharSequence> logger) {
-    new Pump(process.errorReader(), name, logger);
+    new Pump(process.errorReader(), name, outputPath, logger, stdErrLevel);
   }
 
   public void pumpStdOut(BiConsumer<LogLevel, CharSequence> logger) {
-    new Pump(process.inputReader(), name, logger);
+    new Pump(process.inputReader(), name, null, logger, LogLevel.INFO);
   }
 
   public void waitForProcess(long deadline, BiConsumer<LogLevel, CharSequence> logger)
@@ -177,12 +182,12 @@ class StepProcess {
         }
       case LOG_ALWAYS:
         {
-          logger.accept(logLevel, exitCodeMessage(exitCode));
+          logger.accept(exitLevel, exitCodeMessage(exitCode));
           break;
         }
       default:
         if (misMatch) {
-          logger.accept(logLevel, exitCodeMessage(exitCode).append(DOES_NOT_MATCH_SUCCESS_CODES));
+          logger.accept(exitLevel, exitCodeMessage(exitCode).append(DOES_NOT_MATCH_SUCCESS_CODES));
         }
     }
   }

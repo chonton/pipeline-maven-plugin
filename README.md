@@ -29,17 +29,18 @@ Plugin reports are available at [plugin info](https://chonton.github.io/pipeline
 
 ## Step Attributes
 
-| Parameter | Type               | Description                                                                                                    |
-|----------:|:-------------------|:---------------------------------------------------------------------------------------------------------------|
-|      name | optional String    | name of step; defaults to cmd                                                                                  |
-|       cmd | required String    | program to run                                                                                                 |
-|      args | List<String>       | list of program arguments                                                                                      |
-|       env | Map<String,String> | environment variables for program                                                                              |
-|       dir | optional String    | working directory of step, relative to pipeline working directory; defaults to pipeline working directory      |
-|    stdErr | optional String    | file to receive error output; defaults to maven logger                                                         |
-|   success | optional String    | Comma separated list of positive integers; defaults to all exit codes sucessful                                |
-| endAction | optional String    | Action to take on command completion. One of LOG_MISMATCH, LOG_ALWAYS, EXIT_MISMATCH; defaults to LOG_MISMATCH |
-|  logLevel | optional String    | Level to log exit code; one of ERROR, WARN, INFO, DEBUG; defaults to INFO                                      |
+|    Parameter | Type               | Description                                                                                                                    |
+|-------------:|:-------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+|         name | optional String    | name of step; defaults to cmd                                                                                                  |
+|          cmd | required String    | program to run                                                                                                                 |
+|         args | List<String>       | list of program arguments                                                                                                      |
+|          env | Map<String,String> | environment variables for program                                                                                              |
+|          dir | optional String    | working directory of step, relative to pipeline working directory; defaults to pipeline working directory                      |
+|       stdErr | optional String    | file to receive error output; defaults to stdErr inherited from maven                                                          |
+|  stdErrLevel | optional String    | Maven log level for copy of stdErr, ineffective when stdErr is a tty. One of ERROR, WARN, INFO, DEBUG; defaults to not copying |
+|      success | optional String    | Comma separated list of positive integers; defaults to all exit codes sucessful                                                |
+|    endAction | optional String    | Action to take on command completion. One of LOG_MISMATCH, LOG_ALWAYS, EXIT_MISMATCH; defaults to LOG_MISMATCH                 |
+| exitLogLevel | optional String    | Maven log level for log exit code; one of ERROR, WARN, INFO, DEBUG; defaults to INFO                                           |
 
 Successful run of pipeline occurs if:
 - wait duration is not exceeded
@@ -57,7 +58,7 @@ Successful run of pipeline occurs if:
       <plugin>
         <groupId>org.honton.chas</groupId>
         <artifactId>pipeline-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
       </plugin>
     </plugins>
   </pluginManagement>
@@ -91,7 +92,7 @@ Successful run of pipeline occurs if:
                   </arg>
                 </args>
                 <success>0</success>
-                <logLevel>INFO</logLevel>
+                <exitLogLevel>INFO</exitLogLevel>
                 <endAction>EXIT_MISMATCH</endAction>
               </step>
               <step>

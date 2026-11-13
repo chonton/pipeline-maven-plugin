@@ -28,13 +28,19 @@ public class Step {
   private String stdErr;
 
   /**
+   * Maven log level for copy of stdErr, ineffective when stdErr is a tty. one of ERROR, WARN, INFO,
+   * DEBUG; defaults to INFO
+   */
+  private String stdErrLevel;
+
+  /**
    * Comma separated positive integers. Step is considered successful if command exit code is one of
    * the success codes. Empty success is equivalent to all exit codes are successful
    */
   private String success;
 
-  /** Level to log exit code. One of ERROR, WARN, INFO, DEBUG; defaults to INFO */
-  private String logLevel;
+  /** Maven log level for log exit code. One of ERROR, WARN, INFO, DEBUG; defaults to INFO */
+  private String exitLogLevel;
 
   /**
    * Action to take on command completion. One of LOG_MISMATCH, LOG_ALWAYS, EXIT_MISMATCH; defaults
